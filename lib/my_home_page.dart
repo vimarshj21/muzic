@@ -1,5 +1,5 @@
-import 'dart:html';
-import 'dart:ui';
+
+import 'dart:convert';
 
 import 'package:muzic/app_colors.dart' as AppColors;
 import 'package:flutter/material.dart';
@@ -12,6 +12,21 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late List popularBooks;
+
+   ReadData() async {
+   await DefaultAssetBundle.of(context).loadString("json/popularBooks.json").then((s) {
+        setState(() {
+          popularBooks=json.decode(s);
+        });
+    });
+  }
+
+  @override 
+  void initState(){
+    super.initState();
+    ReadData();
+  }
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -41,7 +56,7 @@ class _HomePageState extends State<HomePage> {
                       )
                     ],
                   )),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               Row(
@@ -55,20 +70,37 @@ class _HomePageState extends State<HomePage> {
                   )
                 ],
               ),
+              const SizedBox(height: 20,),
               Container(
                 height: 180,
+                child: Stack(
+                  children: [
+                      Positioned( 
+                        top: 0,
+                        left: -20,
+                        right: 0,
+                  child: Container(
+                height: 180,
+                width: MediaQuery.of(context).size.width,
+                
                 child: PageView.builder(
                     controller: PageController(viewportFraction: 0.8),
-                    itemCount: 5,
+                    itemCount: popularBooks==null?0:popularBooks.length,
                     itemBuilder: (_, i) {
                       return Container(
+                        margin: EdgeInsets.only(right: 10),
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
                             image: DecorationImage(
-                                image: AssetImage("img/pic-8.png"))),
+                                image: AssetImage(popularBooks[i]["img"]),
+                                fit: BoxFit.fill)),
                       );
                     }),
               )
+                  )
+                  ],
+                ) ,
+              ), 
             ],
           ),
         ),
