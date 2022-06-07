@@ -1,5 +1,5 @@
-
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:muzic/app_colors.dart' as AppColors;
 import 'package:flutter/material.dart';
@@ -11,22 +11,30 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   late List popularBooks;
+  late ScrollController _scrollController;
+  late TabController _tabController;
 
-   ReadData() async {
-   await DefaultAssetBundle.of(context).loadString("json/popularBooks.json").then((s) {
-        setState(() {
-          popularBooks=json.decode(s);
-        });
+  ReadData() async {
+    await DefaultAssetBundle.of(context)
+        .loadString("json/popularBooks.json")
+        .then((s) {
+      setState(() {
+        popularBooks = json.decode(s);
+      });
     });
   }
 
-  @override 
-  void initState(){
+  @override
+  void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _scrollController = ScrollController();
     ReadData();
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -70,37 +78,62 @@ class _HomePageState extends State<HomePage> {
                   )
                 ],
               ),
-              const SizedBox(height: 20,),
+              const SizedBox(
+                height: 20,
+              ),
               Container(
                 height: 180,
                 child: Stack(
                   children: [
-                      Positioned( 
+                    Positioned(
                         top: 0,
                         left: -20,
                         right: 0,
-                  child: Container(
-                height: 180,
-                width: MediaQuery.of(context).size.width,
-                
-                child: PageView.builder(
-                    controller: PageController(viewportFraction: 0.8),
-                    itemCount: popularBooks==null?0:popularBooks.length,
-                    itemBuilder: (_, i) {
-                      return Container(
-                        margin: EdgeInsets.only(right: 10),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            image: DecorationImage(
-                                image: AssetImage(popularBooks[i]["img"]),
-                                fit: BoxFit.fill)),
-                      );
-                    }),
-              )
-                  )
+                        child: Container(
+                          height: 180,
+                          width: MediaQuery.of(context).size.width,
+                          child: PageView.builder(
+                              controller: PageController(viewportFraction: 0.8),
+                              itemCount: popularBooks == null
+                                  ? 0
+                                  : popularBooks.length,
+                              itemBuilder: (_, i) {
+                                return Container(
+                                  margin: EdgeInsets.only(right: 10),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15),
+                                      image: DecorationImage(
+                                          image: AssetImage(
+                                              popularBooks[i]["img"]),
+                                          fit: BoxFit.fill)),
+                                );
+                              }),
+                        ))
                   ],
-                ) ,
-              ), 
+                ),
+              ),
+              Expanded(
+                child: NestedScrollView(
+                  controller: _scrollController,
+                  headerSliverBuilder: (BuildContext context, bool isScroll) {
+                    return [
+                      SliverAppBar(
+                        pinned: true,
+                        bottom: PreferredSize(
+                            preferredSize: Size.fromHeight(50),
+                            child: Container(
+                              margin: const EdgeInsets.all(0),
+                              child: TabBar(
+                                indicatorPadding: const EdgeInsets.all(0),
+                                indicatorSize: TabBarIndicatorSize.label,
+                                tabs: [],
+                              ),
+                            )),
+                      )
+                    ];
+                  },
+                ),
+              )
             ],
           ),
         ),
